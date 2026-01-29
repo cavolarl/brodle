@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Board } from '@/components/Board';
 import { Keyboard } from '@/components/Keyboard';
-import { WORDS } from '@/lib/words';
+import { allWords as WORDS } from '@/lib/words';
 import {
   GameState,
   createInitialState,
@@ -48,8 +48,8 @@ export default function Home() {
           return;
         }
 
-        // Check if it's a valid word
-        if (!WORDS.includes(gameState.currentGuess.toUpperCase())) {
+        // Check if it's a valid word (compare lowercase since word list is lowercase)
+        if (!WORDS.includes(gameState.currentGuess.toLowerCase())) {
           setShake(true);
           setTimeout(() => setShake(false), 500);
           showMessage('Not in word list');
@@ -73,8 +73,8 @@ export default function Home() {
         return;
       }
 
-      // Regular letter
-      if (/^[A-Z]$/i.test(key) && gameState.currentGuess.length < 5) {
+      // Regular letter (including Swedish å, ä, ö)
+      if (/^[A-ZÅÄÖ]$/i.test(key) && gameState.currentGuess.length < 5) {
         setGameState((prev) =>
           prev
             ? { ...prev, currentGuess: prev.currentGuess + key.toUpperCase() }
@@ -94,7 +94,7 @@ export default function Home() {
         handleKey('ENTER');
       } else if (e.key === 'Backspace') {
         handleKey('BACKSPACE');
-      } else if (/^[a-zA-Z]$/.test(e.key)) {
+      } else if (/^[a-zA-ZåäöÅÄÖ]$/.test(e.key)) {
         handleKey(e.key.toUpperCase());
       }
     };

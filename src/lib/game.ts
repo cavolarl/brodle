@@ -131,11 +131,16 @@ export function createInitialState(allWords: string[]): GameState {
 
 // Process a guess and return the new game state (EVIL VERSION)
 export function processGuess(state: GameState, guess: string): GameState {
-  const upperGuess = guess.toUpperCase();
+  const normalizedGuess = guess.toLowerCase();
+  const displayGuess = guess.toUpperCase();
 
   // Find the most adversarial response - keeps the most words possible
-  const { results, remainingWords } = findAdversarialResponse(upperGuess, state.validWords);
-  const guessResult: GuessResult = { guess: upperGuess, results };
+  const { results, remainingWords } = findAdversarialResponse(normalizedGuess, state.validWords);
+  // Store display version but with computed results
+  const guessResult: GuessResult = {
+    guess: displayGuess,
+    results: results.map(r => ({ ...r, letter: r.letter.toUpperCase() }))
+  };
 
   const newGuesses = [...state.guesses, guessResult];
 
@@ -148,14 +153,14 @@ export function processGuess(state: GameState, guess: string): GameState {
       guesses: newGuesses,
       currentGuess: '',
       validWords: remainingWords,
-      targetWord: remainingWords[0] || upperGuess,
+      targetWord: (remainingWords[0] || normalizedGuess).toUpperCase(),
       gameOver: true,
       won: true,
     };
   }
 
   // The "target" is now just representative - any word from remaining pool
-  const newTarget = remainingWords[0] || state.targetWord;
+  const newTarget = (remainingWords[0] || state.targetWord).toUpperCase();
 
   return {
     ...state,
