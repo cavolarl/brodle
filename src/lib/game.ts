@@ -82,39 +82,64 @@ export function filterValidWords(allWords: string[], guesses: GuessResult[]): st
   return allWords.filter(word => isWordConsistent(word, guesses));
 }
 
-// Pick a new random target word from valid words
-export function pickNewTarget(validWords: string[]): string {
-  if (validWords.length === 0) {
-    throw new Error('No valid words remaining!');
-  }
-  return validWords[Math.floor(Math.random() * validWords.length)];
+// Convert results array to a string key for grouping
+function resultsToKey(results: LetterResult[]): string {
+  return results.map(r => r.state[0]).join(''); // e.g., "acpaa" for absent/correct/present/absent/absent
 }
 
-// Create initial game state
+// Find the most adversarial response - the feedback pattern that keeps the most words
+export function findAdversarialResponse(
+  guess: string,
+  validWords: string[]
+): { results: LetterResult[]; remainingWords: string[] } {
+  // Group words by the feedback pattern they would produce
+  const groups = new Map<string, { results: LetterResult[]; words: string[] }>();
+
+  for (const word of validWords) {
+    const results = evaluateGuess(guess, word);
+    const key = resultsToKey(results);
+
+    if (!groups.has(key)) {
+      groups.set(key, { results, words: [] });
+    }
+    groups.get(key)!.words.push(word);
+  }
+
+  // Find the group with the most words (most adversarial choice)
+  let bestGroup = { results: [] as LetterResult[], words: [] as string[] };
+  for (const group of groups.values()) {
+    if (group.words.length > bestGroup.words.length) {
+      bestGroup = group;
+    }
+  }
+
+  return { results: bestGroup.results, remainingWords: bestGroup.words };
+}
+
+// Create initial game state (EVIL VERSION - no fixed target)
 export function createInitialState(allWords: string[]): GameState {
-  const targetWord = allWords[Math.floor(Math.random() * allWords.length)];
   return {
     guesses: [],
     currentGuess: '',
     validWords: allWords,
-    targetWord,
+    targetWord: '', // No target until player wins
     gameOver: false,
     won: false,
-    maxGuesses: 6,
+    maxGuesses: Infinity, // No limit - play until you corner it
   };
 }
 
-// Process a guess and return the new game state
+// Process a guess and return the new game state (EVIL VERSION)
 export function processGuess(state: GameState, guess: string): GameState {
   const upperGuess = guess.toUpperCase();
 
-  // Evaluate the guess against current target
-  const results = evaluateGuess(upperGuess, state.targetWord);
+  // Find the most adversarial response - keeps the most words possible
+  const { results, remainingWords } = findAdversarialResponse(upperGuess, state.validWords);
   const guessResult: GuessResult = { guess: upperGuess, results };
 
   const newGuesses = [...state.guesses, guessResult];
 
-  // Check if the player won (all correct)
+  // Check if the player won (narrowed down to 1 word and guessed it)
   const won = results.every(r => r.state === 'correct');
 
   if (won) {
@@ -122,29 +147,23 @@ export function processGuess(state: GameState, guess: string): GameState {
       ...state,
       guesses: newGuesses,
       currentGuess: '',
+      validWords: remainingWords,
+      targetWord: remainingWords[0] || upperGuess,
       gameOver: true,
       won: true,
     };
   }
 
-  // Filter remaining valid words based on all guesses
-  const newValidWords = filterValidWords(state.validWords, newGuesses);
-
-  // Check if game is over (no guesses left or no valid words)
-  const gameOver = newGuesses.length >= state.maxGuesses || newValidWords.length === 0;
-
-  // Pick a new target from remaining valid words (the sneaky part!)
-  const newTarget = newValidWords.length > 0
-    ? pickNewTarget(newValidWords)
-    : state.targetWord;
+  // The "target" is now just representative - any word from remaining pool
+  const newTarget = remainingWords[0] || state.targetWord;
 
   return {
     ...state,
     guesses: newGuesses,
     currentGuess: '',
-    validWords: newValidWords,
+    validWords: remainingWords,
     targetWord: newTarget,
-    gameOver,
+    gameOver: false,
     won: false,
   };
 }

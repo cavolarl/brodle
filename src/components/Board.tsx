@@ -6,6 +6,7 @@ interface BoardProps {
   guesses: GuessResult[];
   currentGuess: string;
   maxGuesses: number;
+  gameOver?: boolean;
 }
 
 function getTileColor(state: LetterState): string {
@@ -71,8 +72,10 @@ function CurrentRow({ guess }: { guess: string }) {
   );
 }
 
-export function Board({ guesses, currentGuess, maxGuesses }: BoardProps) {
-  const emptyRows = maxGuesses - guesses.length - 1;
+export function Board({ guesses, currentGuess, maxGuesses, gameOver }: BoardProps) {
+  const hasLimit = maxGuesses !== Infinity && Number.isFinite(maxGuesses);
+  const emptyRows = hasLimit ? maxGuesses - guesses.length - 1 : 0;
+  const showCurrentRow = !gameOver && (hasLimit ? guesses.length < maxGuesses : true);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -82,12 +85,12 @@ export function Board({ guesses, currentGuess, maxGuesses }: BoardProps) {
       ))}
 
       {/* Current guess (if game not over) */}
-      {guesses.length < maxGuesses && (
+      {showCurrentRow && (
         <CurrentRow guess={currentGuess} />
       )}
 
-      {/* Empty rows */}
-      {Array(Math.max(0, emptyRows)).fill(null).map((_, i) => (
+      {/* Empty rows (only for limited games) */}
+      {emptyRows > 0 && Array(emptyRows).fill(null).map((_, i) => (
         <Row key={`empty-${i}`} />
       ))}
     </div>
