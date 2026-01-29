@@ -44,7 +44,7 @@ export default function Home() {
         if (gameState.currentGuess.length !== 5) {
           setShake(true);
           setTimeout(() => setShake(false), 500);
-          showMessage('Not enough letters');
+          showMessage('För få bokstäver');
           return;
         }
 
@@ -52,7 +52,7 @@ export default function Home() {
         if (!WORDS.includes(gameState.currentGuess.toLowerCase())) {
           setShake(true);
           setTimeout(() => setShake(false), 500);
-          showMessage('Not in word list');
+          showMessage('Finns inte i ordlistan');
           return;
         }
 
@@ -60,14 +60,14 @@ export default function Home() {
         setGameState(newState);
 
         if (newState.won) {
-          showMessage('You cornered it!', 5000);
+          showMessage('Du hittade ordet!', 5000);
         } else {
           // Show how many words remain
           const count = newState.validWords.length;
           if (count === 1) {
-            showMessage('1 word remains - guess it!');
+            showMessage('1 ord kvar - gissa!');
           } else {
-            showMessage(`${count} possible words remain`);
+            showMessage(`${count} möjliga ord kvar`);
           }
         }
         return;
@@ -111,7 +111,7 @@ export default function Home() {
   if (!gameState) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-white text-xl">Laddar...</div>
       </div>
     );
   }
@@ -128,7 +128,7 @@ export default function Home() {
             <button
               onClick={() => setShowRules(!showRules)}
               className="w-8 h-8 bg-gray-700 rounded hover:bg-gray-600 text-sm font-bold"
-              aria-label="How to play"
+              aria-label="Så spelar du"
             >
               ?
             </button>
@@ -136,7 +136,7 @@ export default function Home() {
               onClick={resetGame}
               className="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 text-sm"
             >
-              New Game
+              Nytt spel
             </button>
           </div>
         </div>
@@ -145,14 +145,14 @@ export default function Home() {
       {/* Rules */}
       {showRules && (
         <div className="max-w-lg mx-auto px-4 py-4 text-sm text-gray-300 border-b border-gray-700">
-          <h2 className="font-bold text-white mb-2">How to Play (Evil Mode)</h2>
-          <p className="mb-2">This is <strong>cursed</strong> Wordle. The game doesn&apos;t pick a word - it avoids your guesses!</p>
-          <p className="mb-2">After each guess, the game chooses feedback that keeps the most words possible. You must narrow it down to exactly 1 word to win.</p>
-          <p className="mb-3">Tile colors:</p>
+          <h2 className="font-bold text-white mb-2">Så spelar du (Ond version)</h2>
+          <p className="mb-2">Detta är <strong>ond</strong> Wordle. Spelet väljer inget ord - det undviker dina gissningar!</p>
+          <p className="mb-2">Efter varje gissning väljer spelet den feedback som behåller flest möjliga ord. Du måste begränsa det till exakt 1 ord för att vinna.</p>
+          <p className="mb-3">Rutornas färger:</p>
           <ul className="space-y-1 ml-2">
-            <li><span className="inline-block w-4 h-4 bg-green-600 rounded align-middle mr-2"></span>Green = correct letter, correct spot</li>
-            <li><span className="inline-block w-4 h-4 bg-yellow-500 rounded align-middle mr-2"></span>Yellow = correct letter, wrong spot</li>
-            <li><span className="inline-block w-4 h-4 bg-gray-600 rounded align-middle mr-2"></span>Gray = letter not in word</li>
+            <li><span className="inline-block w-4 h-4 bg-green-600 rounded align-middle mr-2"></span>Grön = rätt bokstav, rätt plats</li>
+            <li><span className="inline-block w-4 h-4 bg-yellow-500 rounded align-middle mr-2"></span>Gul = rätt bokstav, fel plats</li>
+            <li><span className="inline-block w-4 h-4 bg-gray-600 rounded align-middle mr-2"></span>Grå = bokstaven finns inte i ordet</li>
           </ul>
         </div>
       )}
@@ -180,7 +180,7 @@ export default function Home() {
         {/* Stats */}
         <div className="text-center text-gray-400 text-sm">
           {!gameState.gameOver && (
-            <p>{gameState.validWords.length} possible words</p>
+            <p>{gameState.validWords.length} möjliga ord</p>
           )}
         </div>
 
@@ -195,18 +195,18 @@ export default function Home() {
       {gameState.gameOver && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4">
           <div className="bg-gray-800 rounded-lg p-6 max-w-sm w-full text-center">
-            <h2 className="text-2xl font-bold mb-2">🎉 You Won!</h2>
+            <h2 className="text-2xl font-bold mb-2">🎉 Du vann!</h2>
             <p className="text-gray-300 mb-4">
-              You cornered it in {gameState.guesses.length} {gameState.guesses.length === 1 ? 'guess' : 'guesses'}!
+              Du hittade ordet på {gameState.guesses.length} {gameState.guesses.length === 1 ? 'gissning' : 'gissningar'}!
             </p>
             <p className="text-gray-400 text-sm mb-6">
-              The word was <span className="font-bold text-white">{gameState.targetWord}</span>
+              Ordet var <span className="font-bold text-white">{gameState.targetWord}</span>
             </p>
             <button
               onClick={resetGame}
               className="bg-green-600 hover:bg-green-500 px-6 py-2 rounded font-bold"
             >
-              Play Again
+              Spela igen
             </button>
           </div>
         </div>
